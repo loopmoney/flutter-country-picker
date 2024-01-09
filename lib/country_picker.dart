@@ -60,6 +60,7 @@ void showCountryPicker({
   bool showSearch = true,
   bool useSafeArea = false,
   bool useRootNavigator = false,
+  Widget? title,
   Widget? intialSearchWidget,
   Widget? searchNotFoundWidget,
 }) {
@@ -83,6 +84,7 @@ void showCountryPicker({
     showSearch: showSearch,
     useSafeArea: useSafeArea,
     useRootNavigator: useRootNavigator,
+    title: title,
     intialSearchWidget: intialSearchWidget,
     searchNotFoundWidget: searchNotFoundWidget,
   );

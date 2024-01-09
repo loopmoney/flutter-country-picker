@@ -54,6 +54,9 @@ class CountryListView extends StatefulWidget {
   /// Custom builder function for flag widget
   final CustomFlagBuilder? customFlagBuilder;
 
+  /// BotomSheet title
+  final Widget? title;
+
   /// Search widget when we tap on textfield
   final Widget? intialSearchWidget;
 
@@ -73,6 +76,7 @@ class CountryListView extends StatefulWidget {
     this.showWorldWide = false,
     this.showSearch = true,
     this.customFlagBuilder,
+    this.title,
     this.intialSearchWidget,
     this.searchNotFoundWidget,
   })  : assert(
@@ -147,10 +151,14 @@ class _CountryListViewState extends State<CountryListView> {
 
     return Column(
       children: <Widget>[
-        const SizedBox(height: 12),
+        const SizedBox(height: 16.0),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: widget.title ?? const SizedBox(),
+        ),
         if (widget.showSearch)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: TextField(
               focusNode: _searchFocusNode,
               autofocus: _searchAutofocus,

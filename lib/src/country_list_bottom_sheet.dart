@@ -21,6 +21,7 @@ void showCountryListBottomSheet({
   bool showSearch = true,
   bool useSafeArea = false,
   bool useRootNavigator = false,
+  Widget? title,
   Widget? intialSearchWidget,
   Widget? searchNotFoundWidget,
 }) {
@@ -45,6 +46,7 @@ void showCountryListBottomSheet({
           showWorldWide,
           showSearch,
           customFlagBuilder,
+          title,
           intialSearchWidget,
           searchNotFoundWidget,
         );
@@ -68,6 +70,7 @@ Widget _builder(
   bool showWorldWide,
   bool showSearch,
   CustomFlagBuilder? customFlagBuilder,
+  Widget? title,
   Widget? intialSearchWidget,
   Widget? searchNotFoundWidget,
 ) {
@@ -111,6 +114,7 @@ Widget _builder(
       showWorldWide: showWorldWide,
       showSearch: showSearch,
       customFlagBuilder: customFlagBuilder,
+      title: title,
       intialSearchWidget: intialSearchWidget,
       searchNotFoundWidget: searchNotFoundWidget,
       selectedCountry: selectedCountry,
