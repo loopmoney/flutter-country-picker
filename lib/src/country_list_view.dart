@@ -184,6 +184,7 @@ class _CountryListViewState extends State<CountryListView> {
                         padding: EdgeInsets.symmetric(
                           horizontal:
                               widget.countryListTheme?.padding?.left ?? 0.0,
+                          vertical: 12.0,
                         ),
                         child: const DottedLine(dashColor: Color(0xFFD9DFE9)),
                       ),

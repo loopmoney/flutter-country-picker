@@ -48,6 +48,14 @@ packages:
       relative: true
     source: path
     version: "2.0.23"
+  dotted_line:
+    dependency: transitive
+    description:
+      name: dotted_line
+      sha256: c931ba331656154711d9420f369f80cf9e8869ca9933ae5fb35b7669bcbe7d2e
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.2"
   fake_async:
     dependency: transitive
     description:
@@ -111,6 +119,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.3"
+  sizer:
+    dependency: transitive
+    description:
+      name: sizer
+      sha256: d2b3cb6cbc4a637f508dacd786bae55df31e5fc088044248a43e4fd1e050c117
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.15"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -198,3 +214,4 @@ packages:
     version: "0.1.4-beta"
 sdks:
   dart: ">=3.1.0-185.0.dev <4.0.0"
+  flutter: ">=1.17.0"
