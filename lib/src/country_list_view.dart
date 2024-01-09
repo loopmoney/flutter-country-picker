@@ -151,7 +151,6 @@ class _CountryListViewState extends State<CountryListView> {
 
     return Column(
       children: <Widget>[
-        const SizedBox(height: 16.0),
         Align(
           alignment: Alignment.centerLeft,
           child: widget.title ?? const SizedBox(),
