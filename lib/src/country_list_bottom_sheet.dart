@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sizer/sizer.dart';
 
 import 'country.dart';
 import 'country_list_theme_data.dart';
@@ -19,6 +20,8 @@ void showCountryListBottomSheet({
   bool showSearch = true,
   bool useSafeArea = false,
   bool useRootNavigator = false,
+  Widget? intialSearchWidget,
+  Widget? searchNotFoundWidget,
 }) {
   showModalBottomSheet(
     context: context,
@@ -26,18 +29,24 @@ void showCountryListBottomSheet({
     backgroundColor: Colors.transparent,
     useSafeArea: useSafeArea,
     useRootNavigator: useRootNavigator,
-    builder: (context) => _builder(
-      context,
-      onSelect,
-      favorite,
-      exclude,
-      countryFilter,
-      showPhoneCode,
-      countryListTheme,
-      searchAutofocus,
-      showWorldWide,
-      showSearch,
-      customFlagBuilder,
+    builder: (context) => Sizer(
+      builder: (BuildContext context, _, __) {
+        return _builder(
+          context,
+          onSelect,
+          favorite,
+          exclude,
+          countryFilter,
+          showPhoneCode,
+          countryListTheme,
+          searchAutofocus,
+          showWorldWide,
+          showSearch,
+          customFlagBuilder,
+          intialSearchWidget,
+          searchNotFoundWidget,
+        );
+      },
     ),
   ).whenComplete(() {
     if (onClosed != null) onClosed();
@@ -56,6 +65,8 @@ Widget _builder(
   bool showWorldWide,
   bool showSearch,
   CustomFlagBuilder? customFlagBuilder,
+  Widget? intialSearchWidget,
+  Widget? searchNotFoundWidget,
 ) {
   final device = MediaQuery.of(context).size.height;
   final statusBarHeight = MediaQuery.of(context).padding.top;
@@ -97,6 +108,8 @@ Widget _builder(
       showWorldWide: showWorldWide,
       showSearch: showSearch,
       customFlagBuilder: customFlagBuilder,
+      intialSearchWidget: intialSearchWidget,
+      searchNotFoundWidget: searchNotFoundWidget,
     ),
   );
 }

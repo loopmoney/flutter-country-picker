@@ -59,6 +59,8 @@ void showCountryPicker({
   bool showSearch = true,
   bool useSafeArea = false,
   bool useRootNavigator = false,
+  Widget? intialSearchWidget,
+  Widget? searchNotFoundWidget,
 }) {
   assert(
     exclude == null || countryFilter == null,
@@ -79,5 +81,7 @@ void showCountryPicker({
     showSearch: showSearch,
     useSafeArea: useSafeArea,
     useRootNavigator: useRootNavigator,
+    intialSearchWidget: intialSearchWidget,
+    searchNotFoundWidget: searchNotFoundWidget,
   );
 }

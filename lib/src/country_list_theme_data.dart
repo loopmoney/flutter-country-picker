@@ -16,6 +16,8 @@ class CountryListThemeData {
   /// If null, the style will be set to [TextStyle(fontSize: 16)]
   final TextStyle? searchTextStyle;
 
+  final TextStyle? saveButtonTextStyle;
+
   ///The flag size.
   ///
   /// If null, set to 25
@@ -46,6 +48,7 @@ class CountryListThemeData {
     this.backgroundColor,
     this.textStyle,
     this.searchTextStyle,
+    this.saveButtonTextStyle,
     this.flagSize,
     this.inputDecoration,
     this.borderRadius,
