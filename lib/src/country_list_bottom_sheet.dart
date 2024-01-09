@@ -12,6 +12,7 @@ void showCountryListBottomSheet({
   List<String>? favorite,
   List<String>? exclude,
   List<String>? countryFilter,
+  Country? selectedCountry,
   bool showPhoneCode = false,
   CustomFlagBuilder? customFlagBuilder,
   CountryListThemeData? countryListTheme,
@@ -37,6 +38,7 @@ void showCountryListBottomSheet({
           favorite,
           exclude,
           countryFilter,
+          selectedCountry,
           showPhoneCode,
           countryListTheme,
           searchAutofocus,
@@ -59,6 +61,7 @@ Widget _builder(
   List<String>? favorite,
   List<String>? exclude,
   List<String>? countryFilter,
+  Country? selectedCountry,
   bool showPhoneCode,
   CountryListThemeData? countryListTheme,
   bool searchAutofocus,
@@ -110,6 +113,7 @@ Widget _builder(
       customFlagBuilder: customFlagBuilder,
       intialSearchWidget: intialSearchWidget,
       searchNotFoundWidget: searchNotFoundWidget,
+      selectedCountry: selectedCountry,
     ),
   );
 }
