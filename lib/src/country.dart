@@ -18,6 +18,8 @@ class Country {
     displayName: 'World Wide (WW)',
     displayNameNoCountryCode: 'World Wide',
     e164Key: '',
+    minLength: 0,
+    maxLength: 0,
   );
 
   ///The country phone code
@@ -28,6 +30,8 @@ class Country {
   final int e164Sc;
   final bool geographic;
   final int level;
+  final int minLength;
+  final int maxLength;
 
   ///The country name in English
   final String name;
@@ -72,6 +76,8 @@ class Country {
     required this.displayName,
     required this.displayNameNoCountryCode,
     required this.e164Key,
+    required this.minLength,
+    required this.maxLength,
     this.fullExampleWithPlusSign,
   });
 
@@ -86,7 +92,9 @@ class Country {
         displayName = json['display_name'],
         fullExampleWithPlusSign = json['full_example_with_plus_sign'],
         displayNameNoCountryCode = json['display_name_no_e164_cc'],
-        e164Key = json['e164_key'];
+        e164Key = json['e164_key'],
+        minLength = json['minLength'],
+        maxLength = json['maxLength'];
 
   static Country parse(String country) {
     if (country == worldWide.countryCode) {
@@ -117,6 +125,8 @@ class Country {
     data['full_example_with_plus_sign'] = fullExampleWithPlusSign;
     data['display_name_no_e164_cc'] = displayNameNoCountryCode;
     data['e164_key'] = e164Key;
+    data['minLength'] = minLength;
+    data['maxLength'] = maxLength;
     return data;
   }
 
