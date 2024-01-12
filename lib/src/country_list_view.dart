@@ -164,6 +164,8 @@ class _CountryListViewState extends State<CountryListView> {
               controller: _searchController,
               style:
                   widget.countryListTheme?.searchTextStyle ?? _defaultTextStyle,
+              cursorColor: const Color(0xFF203066),
+              cursorRadius: const Radius.circular(4.0),
               decoration: widget.countryListTheme?.inputDecoration ??
                   InputDecoration(
                     labelText: searchLabel,
