@@ -186,8 +186,10 @@ class _CountryListViewState extends State<CountryListView> {
               ? widget.intialSearchWidget ?? const SizedBox()
               : ListView(
                   children: [
-                    if (_favoriteList != null &&
-                        !_searchFocusNode.hasPrimaryFocus) ...[
+                    if ((_favoriteList != null &&
+                            !_searchFocusNode.hasPrimaryFocus) &&
+                        !(_searchController.text.isNotEmpty &&
+                            _filteredList.isEmpty)) ...[
                       ..._favoriteList!
                           .map<Widget>((currency) => _listRow(currency))
                           .toList(),
