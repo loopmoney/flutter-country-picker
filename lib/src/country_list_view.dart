@@ -310,7 +310,15 @@ class _CountryListViewState extends State<CountryListView> {
                 activeColor: const Color(0xFFFF4321),
                 value: country.countryCode,
                 groupValue: currentSelectedCountry?.countryCode ?? "",
-                onChanged: (value) {},
+                onChanged: (value) {
+                  country.nameLocalized = CountryLocalizations.of(context)
+                      ?.countryName(countryCode: country.countryCode)
+                      ?.replaceAll(RegExp(r"\s+"), " ");
+
+                  setState(() {
+                    currentSelectedCountry = country;
+                  });
+                },
               ),
             ],
           ),

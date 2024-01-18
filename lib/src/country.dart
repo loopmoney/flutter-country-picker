@@ -137,7 +137,7 @@ class Country {
     }
     return phoneCode.startsWith(_query.toLowerCase()) ||
         name.toLowerCase().startsWith(_query.toLowerCase()) ||
-        countryCode.toLowerCase().startsWith(_query.toLowerCase()) ||
+        // countryCode.toLowerCase().startsWith(_query.toLowerCase()) ||
         (localizations
                 ?.countryName(countryCode: countryCode)
                 ?.toLowerCase()
