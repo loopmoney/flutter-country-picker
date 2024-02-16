@@ -213,7 +213,7 @@ class _CountryListViewState extends State<CountryListView> {
                 ),
         ),
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+          margin: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 16.0),
           child: ElevatedButton(
             onPressed: () {
               if (currentSelectedCountry != null) {
