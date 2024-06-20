@@ -2,34 +2,234 @@
 # They are provided by a third-party and are governed by
 # separate terms of service, privacy policy, and support
 # documentation.
-
 # A sample workflow which sets up periodic OSV-Scanner scanning for vulnerabilities,
 # in addition to a PR check which fails if new vulnerabilities are introduced.
 #
 # For more examples and options, including how to ignore specific vulnerabilities,
 # see https://google.github.io/osv-scanner/github-action/
-
 name: OSV-Scanner
 
 on:
   schedule:
-    - cron: '30 11 * * 1'
+    - cron: '00 7 * * 1'
   push:
-    branches: [ "master" ]
-
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      
 permissions:
-  # Require writing security events to upload SARIF file to security tab
   security-events: write
-  # Read commit contents
   contents: read
-
+  
 jobs:
-  scan-scheduled:
-    if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
-    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@1f1242919d8a60496dd1874b24b62b2370ed4c78" # v1.7.1
-    with:
-      # Example of specifying custom arguments
-      scan-args: |-
-        -r
-        --skip-git
-        ./
+  osv-scan:
+  
+    runs-on: ubuntu-latest
+    outputs:
+      commit_hash: ${{ steps.commit-info.outputs.COMMIT_HASH }}
+      commit_author: ${{ steps.commit-info.outputs.COMMIT_AUTHOR }}
+      commit_author_email: ${{ steps.commit-info.outputs.COMMIT_AUTHOR_EMAIL }}
+      commit_author_username: ${{ steps.commit-info.outputs.COMMIT_AUTHOR_USERNAME }}
+      commit_message: ${{ steps.commit-info.outputs.COMMIT_MESSAGE }}
+      repo_url: ${{ steps.commit-info.outputs.REPO_URL }}
+      results_message: ${{ steps.get_result_var.outputs.RESULTS_MESSAGE }}
+      packages_affected: ${{ steps.get_result_var.outputs.PACKAGES_AFFECTED }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download OSV-Scanner
+        run: |
+          curl -L -o osv-scanner https://github.com/google/osv-scanner/releases/download/v1.7.4/osv-scanner_linux_amd64
+          chmod +x osv-scanner
+          sudo mv osv-scanner /usr/local/bin/osv-scanner  
+
+        continue-on-error: false
+
+      - name: Verify OSV-Scanner 
+        run: |
+          file /usr/local/bin/osv-scanner
+          /usr/local/bin/osv-scanner --version
+        continue-on-error: true
+          
+      - name: Run OSV-Scanner
+        id: osv-scan
+        run: |
+          /usr/local/bin/osv-scanner --lockfile=pubspec.lock --format=json > osv-scan-results.json
+        continue-on-error: true
+
+      - name: Get Commit Info
+        id: commit-info
+        run: |
+        
+          echo "Fetching commit info..."
+          commit_hash=$(git log -1 --pretty=format:'%H')
+          commit_author=$(git log -1 --pretty=format:'%an')
+          commit_author_email=$(git log -1 --pretty=format:'%ae')
+          commit_author_username=$(git log -1 --pretty=format:'%ae' | cut -d '@' -f 1)
+          commit_message=$(git log -1 --pretty=format:'%s')
+          repo_url="${{ github.server_url }}/${{ github.repository }}"
+
+          echo "COMMIT_HASH=${commit_hash}"
+          echo "COMMIT_AUTHOR=${commit_author}"
+          echo "COMMIT_AUTHOR_EMAIL=${commit_author_email}"
+          echo "COMMIT_AUTHOR_USERNAME=${commit_author_username}"
+          echo "COMMIT_MESSAGE=${commit_message}"
+          echo "REPO_URL=${repo_url}"
+
+          echo "COMMIT_HASH=${commit_hash}" >> $GITHUB_OUTPUT
+          echo "COMMIT_AUTHOR=${commit_author}" >> $GITHUB_OUTPUT
+          echo "COMMIT_AUTHOR_EMAIL=${commit_author_email}" >> $GITHUB_OUTPUT
+          echo "COMMIT_AUTHOR_USERNAME=${commit_author_username}" >> $GITHUB_OUTPUT
+          echo "COMMIT_MESSAGE=${commit_message}" >> $GITHUB_OUTPUT
+          echo "REPO_URL=${repo_url}" >> $GITHUB_OUTPUT
+        
+      - name: Upload OSV-Scanner results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: osv-scan-results
+          path: osv-scan-results.json
+
+      - name: Set OSV-Scanner Results as Environment Variable
+        id: get_result_var
+        run: |
+        
+          results=$(jq '.results' osv-scan-results.json)
+          
+          packages_length=0 
+          
+          if [[ $(echo "$results" | jq 'length') -eq 0 ]]; then
+            message="No vulnerabilities found"
+          else
+            message=""
+            for row in $(echo "$results" | jq -r '.[] | @base64'); do
+              _jq() {
+                echo ${row} | base64 --decode | jq -r ${1}
+              }
+              packages=$(_jq '.packages')
+
+              # Checking if packages field exist and it's not empty
+              if [ "$packages" != "null" ] && [ ! -z "$packages" ] && [[ $(echo "$packages" | jq 'length') -gt 0 ]]; then
+                
+                packages_length=$(echo "$packages" | jq 'length')
+
+                for package in $(echo "$packages" | jq -r '.[] | @base64'); do
+                  _pkg() {
+                    echo ${package} | base64 --decode | jq -r ${1}
+                  }
+                  
+                  package_name=$(_pkg '.package.name')
+                  package_version=$(_pkg '.package.version')
+                  
+                  message+="\n\n **Package: $package_name, Version: $package_version**\n"
+                  message+="\n"
+                  vulnerabilities=$(_pkg '.vulnerabilities')
+
+                  # Checking if vulnerabilities field exist and it's not empty
+                  
+                  if [ "$vulnerabilities" != "null" ] && [ ! -z "$vulnerabilities" ] && [[ $(echo "$vulnerabilities" | jq 'length') -gt 0 ]]; then
+                    
+                    for vuln in $(echo "$vulnerabilities" | jq -r '.[] | @base64'); do
+                      _vuln() {
+                        echo ${vuln} | base64 --decode | jq -r ${1}
+                      }
+                      summary=$(_vuln '.summary')
+                      message+="\n  - $summary\n"
+                    done
+                  fi
+                done
+              else
+                message="No vulnerabilities found"
+                echo "PACKAGES_AFFECTED=${packages_length}" >> $GITHUB_OUTPUT
+              fi
+            done
+          fi
+          
+          echo "PACKAGES_AFFECTED=${packages_length}" >> $GITHUB_OUTPUT
+          echo "RESULTS_MESSAGE=${message}" >> $GITHUB_OUTPUT
+          echo "$message"
+          
+  notify-teams:
+    needs: osv-scan
+    runs-on: ubuntu-latest
+    env:
+      REPO_URL: ${{ needs.osv-scan.outputs.repo_url }}
+      COMMIT_HASH: ${{ needs.osv-scan.outputs.commit_hash }}
+      COMMIT_AUTHOR: ${{ needs.osv-scan.outputs.commit_author }}
+      COMMIT_AUTHOR_EMAIL: ${{ needs.osv-scan.outputs.commit_author_email }}
+      COMMIT_AUTHOR_USERNAME: ${{ needs.osv-scan.outputs.commit_author_username }}
+      COMMIT_MESSAGE: ${{ needs.osv-scan.outputs.commit_message }}
+      PACKAGES_AFFECTED: ${{ needs.osv-scan.outputs.packages_affected }}
+      RESULTS_MESSAGE: ${{ needs.osv-scan.outputs.results_message }}
+          
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Download OSV-Scanner results
+        uses: actions/download-artifact@v4
+        with:
+          name: osv-scan-results
+          
+      - name: Notify Teams Channel
+        # if: failure() || steps.osv-scan.outcome == 'failure'
+        if: always()
+        run: |
+   
+          echo "Commit hash: $COMMIT_HASH"
+          echo "Commit author: $COMMIT_AUTHOR"
+          echo "Commit author email: $COMMIT_AUTHOR_EMAIL"
+          echo "Commit author username: $COMMIT_AUTHOR_USERNAME"
+          echo "Repository URL: $REPO_URL"
+          echo "Result Message: $RESULTS_MESSAGE"
+          echo "Packages Affected: $PACKAGES_AFFECTED"
+
+          if [ $PACKAGES_AFFECTED -gt 0 ]; then
+            THEME_COLOR="FF0000" # Red
+            TEXT="## Dependancies Affected : $PACKAGES_AFFECTED"
+            FACTS='{"name": "Vulnerabilities :", "value": "'"$RESULTS_MESSAGE"'"}'
+          else
+            THEME_COLOR="00FF00" # Green
+            TEXT="## $RESULTS_MESSAGE"
+            FACTS='{"name": "Vulnerabilities :", "value": "No Vulnerabilities"}'
+          fi
+
+
+          RESULTS=$(echo "${{ env.RESULTS }}" | jq '.')
+          MESSAGE=$(cat <<EOF
+          {
+          "@type": "MessageCard",
+          "@context": "http://schema.org/extensions",
+          "themeColor": "$THEME_COLOR",
+          "title": "OSV Scanner : Flutter Country Picker",
+          "summary": "Flutter Country Picker",
+          "sections": [{
+             "activityTitle": "on [${{github.repository}}]($REPO_URL) by $COMMIT_AUTHOR",
+             "text": "$TEXT",
+             "facts": [$FACTS],
+          "markdown": true
+          }],
+          "potentialAction": [{
+             "@type": "OpenUri",
+             "name": "View Full Results",
+             "targets": [{
+                "os": "default",
+                "uri": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+             }]
+           }]
+          }
+          EOF
+          )
+          
+          echo "Sending message to Teams: ${MESSAGE}"
+
+          curl -H "Content-Type: application/json" -d "$MESSAGE" ${{ vars.MS_TEAMS_WEBHOOK_URL }}
+          echo "${MESSAGE}"
+        env:
+          TEAMS_WEBHOOK_URL: ${{ vars.MS_TEAMS_WEBHOOK_URL }}
+    
